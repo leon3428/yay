@@ -2,6 +2,7 @@
 
 #include <istream>
 #include <vector>
+#include "Utils.hpp"
 
 /**
  * @brief Grammar production
@@ -23,7 +24,7 @@ private:
     std::vector<std::string> m_synChars;                                        ///< sorted vector of synchronizing characters used for error recovery 
     std::vector<std::vector<GrammarProduction> > m_grammarProductions;    ///< list of grammar productions for every left side nonterminal character
 
-    int m_startNonTerminalChar;                                                 ///< index of starting nonterminal character
+    int m_startChar;                                                 ///< index of starting nonterminal character
 
     static int m_svFindInd(const std::vector<std::string> &v, const std::string &s);        ///< finds index of string s in sorted vector v using binary search
 
@@ -33,14 +34,15 @@ public:
 
     void loadGrammar(std::istream& stream);                                     ///< loads grammar from stream
 
-    inline int getStartNonTerminalChar() const { return m_startNonTerminalChar; }
+    inline int getStartChar() const { return m_startChar; }
 
     inline const std::vector<GrammarProduction>& getProductionsForNTC(int nonTerminalChar) const {
-        return m_grammarProductions[nonTerminalChar];
+        DebugAssert(decodeNonTerminalId(nonTerminalChar) < 0 || decodeNonTerminalId(nonTerminalChar) >= m_nonTerminalChars.size(), "Requested nonterminal char does not exist");
+        return m_grammarProductions[decodeNonTerminalId(nonTerminalChar)];
     }
 
     inline int getNonTerminalCharId(const std::string& nonTerminalChar) const {
-        return m_svFindInd(m_nonTerminalChars, nonTerminalChar);
+        return encodeNonTerminalId(m_svFindInd(m_nonTerminalChars, nonTerminalChar));
     }
 
     inline int getTerminalCharId(const std::string& terminalChar) const {
@@ -49,5 +51,29 @@ public:
 
     inline int getSynCharId(const std::string& synChar) const {
         return m_svFindInd(m_synChars, synChar);
+    }
+
+    static inline int decodeNonTerminalId(int id) {
+        return id * -1 - 1;
+    }
+
+    static inline int encodeNonTerminalId(int id) {
+        return id * -1 - 1;
+    }
+
+    static inline bool isTerminal(int ch) {
+        return ch >= 0;
+    }
+
+    inline int getNonTerminalSize() const {
+        return m_nonTerminalChars.size();
+    }
+
+    inline int getTerminalSize() const {
+        return m_terminalChars.size();
+    }
+
+    inline const std::string& getCharForId(int id) const {
+        return isTerminal(id) ? m_terminalChars[id] : m_nonTerminalChars[decodeNonTerminalId(id)];
     }
 };

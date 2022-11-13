@@ -13,8 +13,8 @@ Grammar::Grammar(std::istream& stream) {
 
 int Grammar::m_svFindInd(const std::vector<std::string> &v, const std::string &s) {
     auto it = std::lower_bound(v.begin(), v.end(), s);
-    if(it == v.end() || (it == v.begin() && v[0] != s))
-        return -1;
+
+    DebugAssert(it == v.end() || (it == v.begin() && v[0] != s), "Could not find char in vector");
 
     return it - v.begin();
 }
@@ -47,13 +47,15 @@ void Grammar::loadGrammar(std::istream& stream) {
         } else if(line[0] != ' ') {
             if(!charsSorted) {
                 charsSorted = true;
+
+                m_terminalChars.push_back("$");
                 std::string start = m_nonTerminalChars[0];
 
                 std::sort(m_nonTerminalChars.begin(), m_nonTerminalChars.end());
                 std::sort(m_terminalChars.begin(), m_terminalChars.end());
                 std::sort(m_synChars.begin(), m_synChars.end());
 
-                m_startNonTerminalChar = m_svFindInd(m_nonTerminalChars, start);
+                m_startChar = m_svFindInd(m_nonTerminalChars, start);
 
                 m_grammarProductions.resize(m_nonTerminalChars.size());
             }
@@ -70,7 +72,7 @@ void Grammar::loadGrammar(std::istream& stream) {
             while(ss >> token) {
                 int ind;
                 if(token[0] == '<')
-                    ind = m_svFindInd(m_nonTerminalChars, token) * -1 -1;
+                    ind = encodeNonTerminalId(m_svFindInd(m_nonTerminalChars, token));
                 else
                     ind = m_svFindInd(m_terminalChars, token);
                 
