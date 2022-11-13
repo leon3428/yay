@@ -63,8 +63,8 @@ void Grammar::loadGrammar(std::istream& stream) {
             std::stringstream ss(line);
             std::string token;
 
-            m_grammarProductions[leftSide].emplace_front();
-            m_grammarProductions[leftSide].front().priority = productionCnt;
+            m_grammarProductions[leftSide].emplace_back();
+            m_grammarProductions[leftSide].back().priority = productionCnt;
             productionCnt++;
 
             while(ss >> token) {
@@ -74,7 +74,7 @@ void Grammar::loadGrammar(std::istream& stream) {
                 else
                     ind = m_svFindInd(m_terminalChars, token);
                 
-                 m_grammarProductions[leftSide].front().rightSide.push_back(ind);
+                 m_grammarProductions[leftSide].back().rightSide.push_back(ind);
             }
         }
     }

@@ -2,7 +2,6 @@
 
 #include <istream>
 #include <vector>
-#include <forward_list>
 
 /**
  * @brief Grammar production
@@ -22,7 +21,7 @@ private:
     std::vector<std::string> m_nonTerminalChars;                                ///< sorted vector of nonterminal characters
     std::vector<std::string> m_terminalChars;                                   ///< sorted vector of terminal characters
     std::vector<std::string> m_synChars;                                        ///< sorted vector of synchronizing characters used for error recovery 
-    std::vector<std::forward_list<GrammarProduction> > m_grammarProductions;    ///< list of grammar productions for every left side nonterminal character
+    std::vector<std::vector<GrammarProduction> > m_grammarProductions;    ///< list of grammar productions for every left side nonterminal character
 
     int m_startNonTerminalChar;                                                 ///< index of starting nonterminal character
 
@@ -36,7 +35,7 @@ public:
 
     inline int getStartNonTerminalChar() const { return m_startNonTerminalChar; }
 
-    inline const std::forward_list<GrammarProduction>& getProductionsForNTC(int nonTerminalChar) const {
+    inline const std::vector<GrammarProduction>& getProductionsForNTC(int nonTerminalChar) const {
         return m_grammarProductions[nonTerminalChar];
     }
 
