@@ -76,4 +76,8 @@ public:
     inline const std::string& getCharForId(int id) const {
         return isTerminal(id) ? m_terminalChars[id] : m_nonTerminalChars[decodeNonTerminalId(id)];
     }
+
+    inline const GrammarProduction& getGrammarProduction(int leftChar, int ind) const {
+        return m_grammarProductions[decodeNonTerminalId(leftChar)][ind];
+    }
 };

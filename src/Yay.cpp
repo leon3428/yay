@@ -13,17 +13,22 @@ int main(int argc, char const *argv[])
 
     DfaBuilder dfaBuilder(g);
 
-    std::set<int> dst;
-    std::vector<int> chSeries;
+    std::set<LR1State> state, dst;
+    state.emplace(-2, 0, 0, 0);
+    dfaBuilder.closure(state);
 
-    chSeries.push_back(g.getNonTerminalCharId("<A>"));
+    dfaBuilder.gotoState(state, g.getTerminalCharId("d"), dst);
 
-    dfaBuilder.getFirst(chSeries, dst);
-
-    for(auto ch : dst) {
-        std::cout << g.getCharForId(ch) << ' ';
+    for(const LR1State& s : dst) {
+        std::cout << g.getCharForId(s.grammarProductionLeft) << " -> ";
+        auto &gp = g.getGrammarProduction(s.grammarProductionLeft, s.grammarProductionId);
+        for(int i = 0;i < gp.rightSide.size(); i++) {
+            if(i == s.dotPosition)
+                std::cout << ". ";
+            std::cout << g.getCharForId(gp.rightSide[i]) << ' ';
+        }    
+        std::cout << ", " << g.getCharForId(s.followChar) << '\n';    
     }
-    std::cout << std::endl;
 
     return 0;
 }
