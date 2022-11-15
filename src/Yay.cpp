@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "Grammar.hpp"
-#include "DfaBuilder.hpp"
+#include "TableBuilder.hpp"
 
 int main(int argc, char const *argv[])
 {
@@ -11,13 +11,13 @@ int main(int argc, char const *argv[])
 
     g.loadGrammar(std::cin);
 
-    DfaBuilder dfaBuilder(g);
+    TableBuilder tableBuilder(g);
 
     std::set<LR1State> state, dst;
     state.emplace(-2, 0, 0, 0);
-    dfaBuilder.closure(state);
+    tableBuilder.closure(state);
 
-    dfaBuilder.gotoState(state, g.getTerminalCharId("d"), dst);
+    tableBuilder.gotoState(state, g.getNonTerminalCharId("<S>"), dst);
 
     for(const LR1State& s : dst) {
         std::cout << g.getCharForId(s.grammarProductionLeft) << " -> ";

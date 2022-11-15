@@ -1,7 +1,7 @@
 add_executable(${PROJECT_NAME} 
     Yay.cpp
     Grammar.cpp
-    DfaBuilder.cpp
+    TableBuilder.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
