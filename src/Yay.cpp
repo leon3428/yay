@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 #include "Grammar.hpp"
 #include "TableBuilder.hpp"
@@ -8,16 +9,20 @@ int main(int argc, char const *argv[])
     std::cout << "Hello World!!" << std::endl;
 
     Grammar g;
-
-    g.loadGrammar(std::cin);
+    std::string inPath = "test/test1/examples/4_55/test.san";
+    std::ifstream inputFile(inPath);
+    g.loadGrammar(inputFile);
+    inputFile.close();
 
     TableBuilder tableBuilder(g);
+    tableBuilder.generate();
 
-    std::set<LR1State> state, dst;
-    state.emplace(-2, 0, 0, 0);
-    tableBuilder.closure(state);
+    /*std::set<LR1State> state, dst;
+    state.emplace(-1, 0, 0, g.getTerminalCharId("$"));
+    tableBuilder.closure(state);*/
 
-    tableBuilder.gotoState(state, g.getNonTerminalCharId("<S>"), dst);
+
+    /*tableBuilder.gotoState(state, g.getNonTerminalCharId("<S>"), dst);
 
     for(const LR1State& s : dst) {
         std::cout << g.getCharForId(s.grammarProductionLeft) << " -> ";
@@ -28,7 +33,7 @@ int main(int argc, char const *argv[])
             std::cout << g.getCharForId(gp.rightSide[i]) << ' ';
         }    
         std::cout << ", " << g.getCharForId(s.followChar) << '\n';    
-    }
+    } */
 
     return 0;
 }

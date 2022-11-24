@@ -1,6 +1,7 @@
 #include "TableBuilder.hpp"
 #include "Utils.hpp"
 #include <stack>
+#include <set>
 
 TableBuilder::TableBuilder(const Grammar &grammar) 
     : m_grammar(grammar) {
@@ -99,4 +100,120 @@ void TableBuilder::gotoState(const std::set<LR1State> &src, int ch, std::set<LR1
     }
 
     closure(dst);
+}
+
+void TableBuilder::print() {
+    for(int i = 0; i < (int)m_C.size(); ++i){
+        std::cout << "set i = " << i << "\n";
+        for(auto it : m_C[i]) {
+            std::cout << it.grammarProductionLeft << " " << it.grammarProductionId << " " << it.dotPosition << " " << it.followChar << "\n"; 
+        }
+    }
+    /*
+    std::cout << "Table:\n";
+    for(auto it1 : m_table){
+        for(auto it2 : it1) {
+            std::cout << it2.action << " ";
+        }
+        std::cout << "\n";
+    }*/
+}
+
+void TableBuilder::generate_items() {
+    std::set<LR1State> state;
+    state.emplace(-1, 0, 0, m_grammar.getTerminalCharId("$"));
+    m_C.push_back(state);
+
+    int idx = 0;
+    while(idx < m_C.size()) {
+        // items
+        closure(m_C[idx]);
+        for(int id = -m_grammar.getNonTerminalSize(); id < m_grammar.getTerminalSize(); ++id) {
+            //int id = m_grammar.encodeNonTerminalId(m_grammar.m_svFindInd(m_grammar.m_nonTerminalChars, symbol));
+
+            std::set<LR1State> dst;
+            gotoState(m_C[idx], id, dst);
+            
+            if(!dst.size()) continue;
+            
+            bool exists = false;
+            int item_id = -1;
+
+            for(auto sets : m_C)
+                if(sets == dst){
+                    exists = true;
+                    break;
+                }
+            if(!exists)
+                m_C.push_back(dst);
+        }    
+        idx ++;
+    }
+}
+
+
+
+void TableBuilder::generate() {
+    generate_items();
+    print();
+    return;
+
+    m_table.resize(m_C.size());
+    
+    for(int i = 0; i < (int)m_C.size(); ++i){
+        m_table[i].resize(m_grammar.getTerminalSize() + m_grammar.getNonTerminalSize());
+        
+        for(LR1State curr : m_C[i]) {
+            if(curr.grammarProductionLeft == m_grammar.getStartChar()){
+                GrammarProduction production = m_grammar.getGrammarProduction(curr.grammarProductionLeft, curr.grammarProductionId);
+                if(production.rightSide[0] == -1)
+                    m_table[i][m_grammar.encodeNonTerminalId(m_grammar.getStartChar()) + m_grammar.getNonTerminalSize()] = TableElement('a', -1);
+                continue;
+            }
+            
+            if(curr.dotPosition < m_grammar.getGrammarProductionSize(curr.grammarProductionLeft, curr.grammarProductionId)) {
+                GrammarProduction production = m_grammar.getGrammarProduction(curr.grammarProductionLeft, curr.grammarProductionId);
+                int symbol = production.rightSide[curr.dotPosition];
+                if(!m_grammar.isTerminal(symbol))
+                    continue;
+                
+                std::set<LR1State> dest;
+                gotoState(m_C[i], symbol, dest);
+                
+                for(int j = 0; j < m_C.size(); ++j){
+                    if(dest == m_C[j]){
+                        int idx = 0;
+                        if (!m_grammar.isTerminal(symbol)){
+                            idx = m_grammar.getTerminalSize();
+                            symbol = m_grammar.decodeNonTerminalId(symbol);
+                        }
+                        //std::cout << idx << " " << symbol << " " << idx+symbol << "/" << m_grammar.getTerminalSize() + m_grammar.getTerminalSize() << "\n";
+                        m_table[i][idx + symbol] = TableElement('s', j); // shift j
+                        break;
+                    }
+                }
+            } else if(curr.dotPosition == m_grammar.getGrammarProductionSize(curr.grammarProductionLeft, curr.grammarProductionId)) {
+                if(curr.grammarProductionLeft == -1) // S'
+                    continue;
+
+                int nxt = curr.followChar;
+                if(!m_grammar.isTerminal(nxt))
+                    nxt = m_grammar.decodeNonTerminalId(nxt) + m_grammar.getNonTerminalSize();
+                std::cout << curr.grammarProductionLeft << " ";
+                std::cout << m_grammar.getGrammarProductionSize(curr.grammarProductionLeft, curr.grammarProductionId) << " ";
+                std::cout << nxt << "\n";
+                m_table[i][nxt] = TableElement('r', curr.grammarProductionLeft, m_grammar.getGrammarProductionSize(curr.grammarProductionLeft, curr.grammarProductionId));
+            } else{
+                std::cout << "WTF\n";
+            }
+        }
+    }
+    
+    for(int i = 0; i < (int)m_table.size(); ++i)
+        for(int j = 0; j < (int)m_table[i].size(); ++j){
+            if(!m_table[i][j].action)
+                m_table[i][j] = TableElement('e', -1);
+        }
+    
+    print();
 }

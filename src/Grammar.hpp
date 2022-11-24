@@ -2,6 +2,7 @@
 
 #include <istream>
 #include <vector>
+#include <iostream>
 #include "Utils.hpp"
 
 /**
@@ -18,7 +19,7 @@ struct GrammarProduction {
  * 
  */
 class Grammar {
-private:
+public:
     std::vector<std::string> m_nonTerminalChars;                                ///< sorted vector of nonterminal characters
     std::vector<std::string> m_terminalChars;                                   ///< sorted vector of terminal characters
     std::vector<std::string> m_synChars;                                        ///< sorted vector of synchronizing characters used for error recovery 
@@ -79,5 +80,21 @@ public:
 
     inline const GrammarProduction& getGrammarProduction(int leftChar, int ind) const {
         return m_grammarProductions[decodeNonTerminalId(leftChar)][ind];
+    }
+    inline const int getGrammarProductionSize(int leftChar, int ind) const {
+        return m_grammarProductions[decodeNonTerminalId(leftChar)][ind].rightSide.size();
+    }
+    void print() {
+        for(auto it : m_nonTerminalChars)
+            std::cout << it << " position: " << getNonTerminalCharId(it) << std::endl;
+
+        for(auto it : m_grammarProductions) {
+            for(auto it2 : it) {
+                for(auto it3 : it2.rightSide) 
+                    std::cout << it3 << " ";
+                std::cout << std::endl;
+            }
+            std::cout << std::endl;
+        }
     }
 };
