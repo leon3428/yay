@@ -10,7 +10,7 @@
  * 
  */
 struct TableElement {
-    char action; // 'a' - accept, 'r' - reduce, 's' - shift
+    char action; // 'A' - accept, 'R' - reduce, 'S' - shift
     int leftSide, elementCnt, shiftTo;
 
     TableElement() { action = leftSide = elementCnt = shiftTo = 0; };
@@ -65,7 +65,6 @@ private:
     std::vector<std::set<int> > m_nonTerminalFirst;                                     ///< memory for already computed first set of an ntc
     std::vector<std::set<LR1State> > m_C; 
     std::vector<std::vector<TableElement> > m_table; // terminal ... nonterminal
-    std::set<LR1State> m_exists;
 
     const std::set<int>& m_getFirstForNonTerminalChar(int id);                          ///< computes first set if not in memory
 
