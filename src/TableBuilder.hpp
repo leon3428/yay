@@ -16,16 +16,8 @@ struct TableElement {
 
     TableElement() { action = leftSide = elementCnt = shiftTo = priority = 0; };
     TableElement(char action) : action(action) {};
-    TableElement(char _action, int a, int b) {
-        action = _action;
-        if(action == 'R') {
-            leftSide = a;
-            elementCnt = b;
-        } else {
-            shiftTo = a;
-            priority = b;
-        }
-    }
+    TableElement(char action, int shiftTo, int priority) : action(action), shiftTo(shiftTo), priority(priority) {};
+	TableElement(char action, int leftSide, int elementCnt, int priority) : action(action), leftSide(leftSide), elementCnt(elementCnt), priority(priority) {};
     TableElement(char action, int leftSide, int elementCnt, int shiftTo, int priority) : action(action), leftSide(leftSide), elementCnt(elementCnt), shiftTo(shiftTo), priority(priority) {};
 };
 

@@ -109,10 +109,9 @@ void TableBuilder::print() {
     for(int i = 0; i < (int)m_C.size(); ++i){
         std::cout << "set i = " << i << "\n";
         for(auto it : m_C[i]) {
-
-            std::cout << m_grammar.getTerminalChars()[m_grammar.decodeNonTerminalId(it.grammarProductionLeft)] << " " 
+            std::cout << m_grammar.getNonTerminalChars()[m_grammar.decodeNonTerminalId(it.grammarProductionLeft)] << " " 
             << it.grammarProductionId << " " << it.dotPosition << " " << m_grammar.getTerminalChars()[it.followChar] << "\n"; 
-        }
+        } std::cout <<"\n";
     }
     std::cout << "\n";
     std::cout << "Table:\n";
@@ -212,8 +211,7 @@ void TableBuilder::generate() {
                 
                 for(int j = 0; j < m_C.size(); ++j){
                     if(dest == m_C[j]){
-                        if( (m_table[i][symbol].action == 'S' && m_table[i][symbol].priority > production.priority) || m_table[i][symbol].action != 'S')
-                            m_table[i][symbol] = TableElement('S', j, production.priority); // shift j
+						m_table[i][symbol] = TableElement('S', j, production.priority); // shift j
                         break;
                     }
                 }
@@ -221,12 +219,13 @@ void TableBuilder::generate() {
                     production.rightSide[0] == emptySymbol) {
                 int nxt = curr.followChar;
                 if(!m_grammar.isTerminal(nxt))
-                    nxt = m_grammar.decodeNonTerminalId(nxt) + m_grammar.getNonTerminalSize();
-                if(m_table[i][nxt].action != 'S'){ // reduce shift -> in favor of shift
+                    nxt = m_grammar.decodeNonTerminalId(nxt) + m_grammar.getTerminalSize();
+                if( (m_table[i][nxt].action != 'S' && m_table[i][nxt].action != 'R') || 
+					(m_table[i][nxt].action == 'R' && m_table[i][nxt].priority > production.priority)){ // reduce shift -> in favor of shift
                     if(production.rightSide[0] != emptySymbol)
-                        m_table[i][nxt] = TableElement('R', curr.grammarProductionLeft, m_grammar.getGrammarProductionSize(curr.grammarProductionLeft, curr.grammarProductionId));
+                        m_table[i][nxt] = TableElement('R', curr.grammarProductionLeft, m_grammar.getGrammarProductionSize(curr.grammarProductionLeft, curr.grammarProductionId), production.priority);
                     else
-                        m_table[i][nxt] = TableElement('R', curr.grammarProductionLeft, 0);
+                        m_table[i][nxt] = TableElement('R', curr.grammarProductionLeft, 0, production.priority);
                 }
             } else{
                 assert(false);
