@@ -35,12 +35,12 @@ struct TableElement {
  */
 struct LR1State {
     int grammarProductionLeft;      ///< encoded id of non terminal character on left side of the production
-    int grammarProductionId;        ///< id of grammar production for ntc grammarProductionLeft
-    int dotPosition;                ///< position of character that dot is in front of
+    unsigned int grammarProductionId;        ///< id of grammar production for ntc grammarProductionLeft
+    unsigned int dotPosition;                ///< position of character that dot is in front of
     int followChar;                 ///< character after production
 
 
-    LR1State(int grammarProductionLeft, int grammarProductionId, int dotPosition, int followChar)
+    LR1State(int grammarProductionLeft, unsigned int grammarProductionId, unsigned int dotPosition, int followChar)
         : grammarProductionLeft(grammarProductionLeft), grammarProductionId(grammarProductionId), dotPosition(dotPosition), followChar(followChar) {}
 
     LR1State()
@@ -62,7 +62,7 @@ struct LR1State {
         return (grammarProductionLeft == s.grammarProductionLeft &&
                 grammarProductionId == s.grammarProductionId &&
                 dotPosition == s.dotPosition &&
-                followChar == followChar);
+                followChar == s.followChar);
     }
 };
 

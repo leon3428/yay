@@ -14,8 +14,6 @@ TableBuilder::TableBuilder(const Grammar &grammar)
 const std::set<int>& TableBuilder::m_getFirstForNonTerminalChar(int id) {
     DebugAssert(Grammar::isTerminal(id), "Char is not terminal");
 
-    int epsilonId = m_grammar.getTerminalCharId("$");
-
     if(m_nonTerminalFirst[Grammar::decodeNonTerminalId(id)].empty()) {
         for(GrammarProduction gp : m_grammar.getProductionsForNTC(id)) {
             getFirst(gp.rightSide.begin(), gp.rightSide.end(), m_nonTerminalFirst[Grammar::decodeNonTerminalId(id)]);
@@ -70,7 +68,7 @@ void TableBuilder::closure(std::set<LR1State> &dfaState) {
         if(Grammar::isTerminal(state_gp.rightSide[lr1StateIt -> dotPosition]))
             continue;
 
-        for(int i = 0;i < m_grammar.getProductionsForNTC(state_gp.rightSide[lr1StateIt -> dotPosition]).size(); i++) {
+        for(size_t i = 0;i < m_grammar.getProductionsForNTC(state_gp.rightSide[lr1StateIt -> dotPosition]).size(); i++) {
             std::set<int> first;
 
             getFirst(state_gp.rightSide.begin() + lr1StateIt -> dotPosition + 1, state_gp.rightSide.end(), first);
@@ -80,8 +78,12 @@ void TableBuilder::closure(std::set<LR1State> &dfaState) {
             }
 
             for(int nextCh : first) {
-                auto res = dfaState.emplace(state_gp.rightSide[lr1StateIt -> dotPosition], i, 0, nextCh);
-                stack.push(res.first);
+                LR1State newState{state_gp.rightSide[lr1StateIt -> dotPosition], (unsigned int)i, 0, nextCh};
+                
+                if(dfaState.find(newState) != dfaState.end()) {
+                    auto res = dfaState.insert(newState);
+                    stack.push(res.first);
+                }
             }
         }
          
@@ -129,14 +131,12 @@ void TableBuilder::print() {
 
 void TableBuilder::generate_items() {
     std::set<LR1State> state;
-    state.emplace(-1, 0, 0, m_grammar.getTerminalCharId("$"));
+    state.emplace(m_grammar.getNonTerminalCharId("<'S>"), 0, 0, m_grammar.getTerminalCharId("$"));
     m_C.push_back(state);
 
-    int idx = 0;
+    size_t idx = 0;
     while(idx < m_C.size()) {
-        std::cout << "IN\n";
         closure(m_C[idx]);
-        std::cout << "OUT\n";
         for(int id = -m_grammar.getNonTerminalSize(); id < m_grammar.getTerminalSize(); ++id) {
             std::set<LR1State> dst;
             gotoState(m_C[idx], id, dst);
@@ -144,7 +144,6 @@ void TableBuilder::generate_items() {
             if(!dst.size()) continue;
             
             bool exists = false;
-            int item_id = -1;
 
             for(auto sets : m_C)
                 if(sets == dst){
@@ -191,11 +190,11 @@ void TableBuilder::generate() {
         m_table[i].resize(m_grammar.getTerminalSize() + m_grammar.getNonTerminalSize());
         
         for(LR1State curr : m_C[i]) {
-            if(curr.grammarProductionLeft == -1 && curr.dotPosition == 1 && curr.followChar == m_grammar.getTerminalCharId("$")){ // S'
+            if(curr.grammarProductionLeft == m_grammar.getNonTerminalCharId("<'S>") && curr.dotPosition == 1 && curr.followChar == m_grammar.getTerminalCharId("$")){ // S'
                 m_table[i][m_grammar.getTerminalCharId("$")] = TableElement('A');
                 continue;
             }
-            if(curr.grammarProductionLeft == -1 && curr.dotPosition == 0)
+            if(curr.grammarProductionLeft == m_grammar.getNonTerminalCharId("<'S>") && curr.dotPosition == 0)
                 startState = i;
 
             GrammarProduction production = m_grammar.getGrammarProduction(curr.grammarProductionLeft, curr.grammarProductionId);
@@ -210,7 +209,7 @@ void TableBuilder::generate() {
                 std::set<LR1State> dest;
                 gotoState(m_C[i], symbol, dest);
                 
-                for(int j = 0; j < m_C.size(); ++j){
+                for(size_t j = 0; j < m_C.size(); ++j) {
                     if(dest == m_C[j]){
                         if( (m_table[i][symbol].action == 'S' && m_table[i][symbol].priority > production.priority) || m_table[i][symbol].action != 'S')
                             m_table[i][symbol] = TableElement('S', j, production.priority); // shift j
@@ -244,7 +243,7 @@ void TableBuilder::generate() {
             std::set<LR1State> dest;
             gotoState(m_C[i], symbol, dest);
 
-            for(int j = 0; j < m_C.size(); ++j){
+            for(size_t j = 0; j < m_C.size(); ++j){
                 if(dest == m_C[j]){
                     if(m_table[i][m_grammar.decodeNonTerminalId(symbol) + m_grammar.getTerminalSize()].action != 'S' || m_table[i][m_grammar.decodeNonTerminalId(symbol) + m_grammar.getTerminalSize()].priority > production.priority)
                         m_table[i][m_grammar.decodeNonTerminalId(symbol) + m_grammar.getTerminalSize()] = TableElement('S', j, production.priority); // shift j

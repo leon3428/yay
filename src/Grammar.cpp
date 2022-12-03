@@ -4,10 +4,6 @@
 #include <algorithm>
 #include <iostream>
 
-Grammar::Grammar() {
-
-}
-
 Grammar::Grammar(std::istream& stream) {
     loadGrammar(stream);
 }
@@ -37,15 +33,20 @@ void Grammar::loadGrammar(std::istream& stream) {
             std::string token;   
             ss >> token;
             if(token == "%V") {
+
                 while(ss >> token) {
                     m_nonTerminalChars.push_back(token);
                 }
                 m_nonTerminalChars.push_back("<'S>");
+
             } else if(token == "%T") {
+
                 while(ss >> token) {
                     m_terminalChars.push_back(token);
                 }  
+
             } else if(token == "%Syn") {
+
                  while(ss >> token) {
                     m_synChars.push_back(token);
                 }  
@@ -61,11 +62,11 @@ void Grammar::loadGrammar(std::istream& stream) {
                 std::sort(m_terminalChars.begin(), m_terminalChars.end());
                 std::sort(m_synChars.begin(), m_synChars.end());
 
-                m_startChar = m_svFindInd(m_nonTerminalChars, start);
+                m_startChar = getNonTerminalCharId("<'S>");
                 m_grammarProductions.resize(m_nonTerminalChars.size());
 
                 // dodaj S' -> S
-                m_grammarProductions[ decodeNonTerminalId(-1) ].push_back({-1000000000, {encodeNonTerminalId(m_startChar)}});
+                m_grammarProductions[ decodeNonTerminalId(getNonTerminalCharId("<'S>")) ].push_back({-1, {encodeNonTerminalId(m_svFindInd(m_nonTerminalChars, start))}});
             }
 
             leftSide = m_svFindInd(m_nonTerminalChars, line);
@@ -84,7 +85,7 @@ void Grammar::loadGrammar(std::istream& stream) {
                 else
                     ind = m_svFindInd(m_terminalChars, token);
                 
-                 m_grammarProductions[leftSide].back().rightSide.push_back(ind);
+                m_grammarProductions[leftSide].back().rightSide.push_back(ind);
             }
         }
     }

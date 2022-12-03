@@ -156,7 +156,6 @@ void simulate(std::string symbol, int line, std::string text) {
 			}
 			continue;
 		} else if(nxt.action == 'E'){
-			greska:
 			std::cerr << "Error\n";
 			errorState = true;
 			continue;
@@ -171,23 +170,18 @@ void simulate(std::string symbol, int line, std::string text) {
 int main(int argc, char const *argv[])
 {
 	parseInput();
-    printTable(table, tableTop);
-
-    std::string inPath = "test/test1/examples/09redred/test.in";
-    std::ifstream inp = std::ifstream(inPath);
 
     std::string symbol, text;
     int line;
     
     st.push(new Node(startState));
     
-    while(inp >> symbol >> line >> text){
+    while(std::cin >> symbol >> line >> text){
         if(mapTo.find(symbol) == mapTo.end())
             symbol = "<" + symbol + ">";
 
 		simulate(symbol, line, text);
     }
-	inp.close();
 
 	simulate("$", line, "");
 

@@ -23,14 +23,14 @@ private:
     std::vector<std::string> m_nonTerminalChars;                                ///< sorted vector of nonterminal characters
     std::vector<std::string> m_terminalChars;                                   ///< sorted vector of terminal characters
     std::vector<std::string> m_synChars;                                        ///< sorted vector of synchronizing characters used for error recovery 
-    std::vector<std::vector<GrammarProduction> > m_grammarProductions;    ///< list of grammar productions for every left side nonterminal character
+    std::vector<std::vector<GrammarProduction> > m_grammarProductions;          ///< list of grammar productions for every left side nonterminal character
 
-    int m_startChar;                                                 ///< index of starting nonterminal character
+    int m_startChar;                                                            ///< index of starting nonterminal character
 
     static int m_svFindInd(const std::vector<std::string> &v, const std::string &s);        ///< finds index of string s in sorted vector v using binary search
 
 public:
-    Grammar();
+    Grammar() = default;
     Grammar(std::istream& stream);                                              ///< constructs grammar from stream
 
     void loadGrammar(std::istream& stream);                                     ///< loads grammar from stream
@@ -41,7 +41,7 @@ public:
 	const std::vector<std::string> &getSynChars() const { return m_synChars; }
 
     inline const std::vector<GrammarProduction>& getProductionsForNTC(int nonTerminalChar) const {
-        DebugAssert(decodeNonTerminalId(nonTerminalChar) < 0 || decodeNonTerminalId(nonTerminalChar) >= m_nonTerminalChars.size(), "Requested nonterminal char does not exist");
+        DebugAssert(decodeNonTerminalId(nonTerminalChar) < 0 || decodeNonTerminalId(nonTerminalChar) >= (int)m_nonTerminalChars.size(), "Requested nonterminal char does not exist");
         return m_grammarProductions[decodeNonTerminalId(nonTerminalChar)];
     }
 
@@ -88,7 +88,7 @@ public:
     inline const GrammarProduction& getGrammarProduction(int leftChar, int ind) const {
         return m_grammarProductions[decodeNonTerminalId(leftChar)][ind];
     }
-    inline const int getGrammarProductionSize(int leftChar, int ind) const {
+    inline size_t getGrammarProductionSize(int leftChar, int ind) const {
         return m_grammarProductions[decodeNonTerminalId(leftChar)][ind].rightSide.size();
     }
     void print() {
