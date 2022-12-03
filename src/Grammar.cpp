@@ -40,7 +40,7 @@ void Grammar::loadGrammar(std::istream& stream) {
                 while(ss >> token) {
                     m_nonTerminalChars.push_back(token);
                 }
-                m_nonTerminalChars.push_back("<'start>");
+                m_nonTerminalChars.push_back("<'S>");
             } else if(token == "%T") {
                 while(ss >> token) {
                     m_terminalChars.push_back(token);

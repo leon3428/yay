@@ -19,7 +19,7 @@ struct GrammarProduction {
  * 
  */
 class Grammar {
-public:
+private:
     std::vector<std::string> m_nonTerminalChars;                                ///< sorted vector of nonterminal characters
     std::vector<std::string> m_terminalChars;                                   ///< sorted vector of terminal characters
     std::vector<std::string> m_synChars;                                        ///< sorted vector of synchronizing characters used for error recovery 
@@ -36,6 +36,9 @@ public:
     void loadGrammar(std::istream& stream);                                     ///< loads grammar from stream
 
     inline int getStartChar() const { return m_startChar; }
+	const std::vector<std::string> &getNonTerminalChars() const { return m_nonTerminalChars; }
+	const std::vector<std::string> &getTerminalChars() const { return m_terminalChars; }
+	const std::vector<std::string> &getSynChars() const { return m_synChars; }
 
     inline const std::vector<GrammarProduction>& getProductionsForNTC(int nonTerminalChar) const {
         DebugAssert(decodeNonTerminalId(nonTerminalChar) < 0 || decodeNonTerminalId(nonTerminalChar) >= m_nonTerminalChars.size(), "Requested nonterminal char does not exist");
@@ -73,6 +76,10 @@ public:
     inline int getTerminalSize() const {
         return m_terminalChars.size();
     }
+
+	inline int getSynSize() const {
+		return m_synChars.size();
+	}
 
     inline const std::string& getCharForId(int id) const {
         return isTerminal(id) ? m_terminalChars[id] : m_nonTerminalChars[decodeNonTerminalId(id)];

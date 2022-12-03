@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include <unordered_set>
+#include <fstream>
 
 /**
  * @brief Shift Reduce table element;
@@ -11,11 +12,21 @@
  */
 struct TableElement {
     char action; // 'A' - accept, 'R' - reduce, 'S' - shift
-    int leftSide, elementCnt, shiftTo;
+    int leftSide, elementCnt, shiftTo, priority;
 
-    TableElement() { action = leftSide = elementCnt = shiftTo = 0; };
-    TableElement(char action, int shiftTo) : action(action), shiftTo(shiftTo) {};
-    TableElement(char action, int leftSide, int elementCnt) : action(action), leftSide(leftSide), elementCnt(elementCnt) {};
+    TableElement() { action = leftSide = elementCnt = shiftTo = priority = 0; };
+    TableElement(char action) : action(action) {};
+    TableElement(char _action, int a, int b) {
+        action = _action;
+        if(action == 'R') {
+            leftSide = a;
+            elementCnt = b;
+        } else {
+            shiftTo = a;
+            priority = b;
+        }
+    }
+    TableElement(char action, int leftSide, int elementCnt, int shiftTo, int priority) : action(action), leftSide(leftSide), elementCnt(elementCnt), shiftTo(shiftTo), priority(priority) {};
 };
 
 /**
@@ -65,8 +76,8 @@ private:
     std::vector<std::set<int> > m_nonTerminalFirst;                                     ///< memory for already computed first set of an ntc
     std::vector<std::set<LR1State> > m_C; 
     std::vector<std::vector<TableElement> > m_table; // terminal ... nonterminal
-
     const std::set<int>& m_getFirstForNonTerminalChar(int id);                          ///< computes first set if not in memory
+    int startState;
 
 public:
     TableBuilder(const Grammar &grammar);                                               ///< constructor from grammar
@@ -77,4 +88,5 @@ public:
     void generate();
     void generate_items();
     void print();
+    void outputTable(std::string outPath);
 };
