@@ -80,7 +80,7 @@ void TableBuilder::closure(std::set<LR1State> &dfaState) {
             for(int nextCh : first) {
                 LR1State newState{state_gp.rightSide[lr1StateIt -> dotPosition], (unsigned int)i, 0, nextCh};
                 
-                if(dfaState.find(newState) != dfaState.end()) {
+                if(dfaState.find(newState) == dfaState.end()) {
                     auto res = dfaState.insert(newState);
                     stack.push(res.first);
                 }

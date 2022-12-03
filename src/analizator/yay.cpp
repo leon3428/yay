@@ -112,8 +112,8 @@ void simulate(std::string symbol, int line, std::string text) {
 			if(sync.find(symbol) == sync.end()) // go to next symbol
 				break;
 			while(!st.empty() && nxt.action == 'E') {
+                top = st.top();
 				st.pop();
-				top = st.top();
 				i = top -> state;
 				j = mapTo[symbol];
 				nxt = table[i][j];
