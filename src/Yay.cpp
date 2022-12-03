@@ -7,11 +7,11 @@
 int main()
 {
     Grammar g;
-    /*std::string inPath = "test/test1/examples/00aab_1/test.san";
-    std::ifstream inputFile(inPath);*/
+    std::string inPath = "test/test1/examples/00aab_1/test.san";
+    std::ifstream inputFile(inPath);
     
     std::string outPath = "src/analizator/in.txt";
-    g.loadGrammar(std::cin);
+    g.loadGrammar(inputFile);
 
     TableBuilder tableBuilder(g);
     tableBuilder.generate();

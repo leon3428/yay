@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_set>
 #include <fstream>
+#include <unordered_map>
 
 /**
  * @brief Shift Reduce table element;
@@ -58,6 +59,23 @@ struct LR1State {
     }
 };
 
+struct DfaStateHasher {
+    std::size_t operator()(std::set<LR1State> const& s) const {
+        std::size_t seed = s.size();
+        for(auto lr1State : s) {
+            uint32_t x = lr1State.grammarProductionLeft;
+            x *= 31;
+            x += lr1State.grammarProductionId;
+            x *= 31;
+            x += lr1State.dotPosition;
+            x *= 31;
+            x += lr1State.followChar;
+            seed ^= x + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        }
+        return seed;
+    }
+};
+
 /**
  * @brief TableBuilder constructs action and goto tables of an LR(1) parser for a given grammar
  * 
@@ -66,7 +84,7 @@ class TableBuilder {
 private:
     const Grammar &m_grammar;                                                           ///< reference to grammar 
     std::vector<std::set<int> > m_nonTerminalFirst;                                     ///< memory for already computed first set of an ntc
-    std::vector<std::set<LR1State> > m_C; 
+    std::unordered_map<std::set<LR1State>, int, DfaStateHasher> m_stateMap;  
     std::vector<std::vector<TableElement> > m_table; // terminal ... nonterminal
     const std::set<int>& m_getFirstForNonTerminalChar(int id);                          ///< computes first set if not in memory
     int startState;
