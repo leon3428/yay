@@ -7,9 +7,7 @@
 int main()
 {
     Grammar g;
-    std::string inPath = "test/test1/examples/13ppjLang/test.san";
-    std::ifstream inputFile(inPath);
-    
+
     std::string outPath = "src/analizator/in.txt";
     
     g.loadGrammar(std::cin);

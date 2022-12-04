@@ -4,6 +4,7 @@
 #include <vector>
 #include <stack>
 #include <map>
+#include <algorithm>
 
 #include "../Grammar.hpp"
 #include "../TableBuilder.hpp"
@@ -122,12 +123,12 @@ void simulate(std::string symbol, int line, std::string text) {
 		}
 
 		if(nxt.action == 'S'){
-			std::cerr << "SHIFT " << i << " " << symbol << " to " << nxt.shiftTo << "\n"; 
+			//std::cerr << "SHIFT " << i << " " << symbol << " to " << nxt.shiftTo << "\n"; 
 			st.push(new Node(nxt.shiftTo, symbol, line, text));
 			return;
 		} else if(nxt.action == 'R'){
-			std::cerr << "REDUCE ";
-			std::cerr << tableTop[Grammar::decodeNonTerminalId(nxt.leftSide) + terminalSize] << " by " << nxt.elementCnt << "\n";
+			//std::cerr << "REDUCE ";
+			//std::cerr << tableTop[Grammar::decodeNonTerminalId(nxt.leftSide) + terminalSize] << " by " << nxt.elementCnt << "\n";
 			Node *tmp = new Node(-1);
 				if(nxt.elementCnt != 0){
 					for(int k = 0; k < nxt.elementCnt; ++k) {
@@ -150,17 +151,17 @@ void simulate(std::string symbol, int line, std::string text) {
 				st.push(tmp);
 			}
 			else {
-				std::cerr << "Error\n";
+				//std::cerr << "Error\n";
 				errorState = true;
 				continue;
 			}
 			continue;
 		} else if(nxt.action == 'E'){
-			std::cerr << "Error\n";
+			//std::cerr << "Error\n";
 			errorState = true;
 			continue;
 		} else {
-			std::cerr << "KRAJ " << st.top() -> symbol << "\n";
+			//std::cerr << "KRAJ " << st.top() -> symbol << "\n";
 			print(st.top());
 			exit(0);
 		}
@@ -171,19 +172,26 @@ int main(int argc, char const *argv[])
 {
 	parseInput();
 
-    std::string symbol, text;
-    int line;
+    std::string symbol, text, textRemainder;
+    int lineCnt;
     
     st.push(new Node(startState));
-    
-    while(std::cin >> symbol >> line >> text){
+
+    while(std::cin >> symbol >> lineCnt >> text){
+		getline(std::cin, textRemainder);
+		
+		// angry windows noises
+        textRemainder.erase(std::remove(textRemainder.begin(), textRemainder.end(), '\n'), textRemainder.cend());
+        textRemainder.erase(std::remove(textRemainder.begin(), textRemainder.end(), '\r'), textRemainder.cend());
+		text = text + textRemainder;
+
         if(mapTo.find(symbol) == mapTo.end())
             symbol = "<" + symbol + ">";
 
-		simulate(symbol, line, text);
+		simulate(symbol, lineCnt, text);
     }
 
-	simulate("$", line, "");
+	simulate("$", lineCnt, "");
 
     return 0;
 }
