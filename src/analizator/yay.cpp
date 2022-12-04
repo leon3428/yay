@@ -114,6 +114,9 @@ void simulate(std::string symbol, int line, std::string text) {
 				break;
 			while(!st.empty() && nxt.action == 'E') {
                 st.pop();
+				if(st.empty()) { // array won't be accepted;
+					exit(0);
+				}
                 top = st.top();
 				i = top -> state;
 				j = mapTo[symbol];
