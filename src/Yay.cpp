@@ -11,7 +11,7 @@ int main()
     std::ifstream inputFile(inPath);
     
     std::string outPath = "src/analizator/in.txt";
-    g.loadGrammar(inputFile);
+    g.loadGrammar(std::cin);
 
     TableBuilder tableBuilder(g);
     tableBuilder.generate();

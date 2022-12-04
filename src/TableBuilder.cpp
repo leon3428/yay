@@ -183,7 +183,7 @@ void TableBuilder::outputTable(std::string outPath) {
 
 void TableBuilder::generate() {
     generate_items();
-    print();
+    //print();
 
     m_table.resize(m_stateMap.size());
     
@@ -204,10 +204,7 @@ void TableBuilder::generate() {
             int symbol = production.rightSide[curr.dotPosition];
 
             if(curr.dotPosition < m_grammar.getGrammarProductionSize(curr.grammarProductionLeft, curr.grammarProductionId)
-                && production.rightSide[0] != emptySymbol) {
-                
-                if(!m_grammar.isTerminal(symbol))
-                    continue;
+                && production.rightSide[0] != emptySymbol && m_grammar.isTerminal(symbol)) {
                 
                 std::set<LR1State> dst;
                 gotoState(state, symbol, dst);
@@ -229,21 +226,18 @@ void TableBuilder::generate() {
                     else
                         m_table[ind][nxt] = TableElement('R', curr.grammarProductionLeft, 0, production.priority);
                 }
-            } else{
-                assert(false);
             }
 
-            // non terminals
-
-            if(!m_grammar.isTerminal(symbol) && production.rightSide.size() < curr.dotPosition) {
+            if(!m_grammar.isTerminal(symbol) && curr.dotPosition < production.rightSide.size() && production.rightSide[0] != '$') {
                 std::set<LR1State> dst;
                 gotoState(state, symbol, dst);
 
                 if(m_stateMap.find(dst) != m_stateMap.end()) {
-                    if(m_table[ind][m_grammar.decodeNonTerminalId(symbol) + m_grammar.getTerminalSize()].action != 'S' || 
-                        m_table[ind][m_grammar.decodeNonTerminalId(symbol) + m_grammar.getTerminalSize()].priority > production.priority) {
+					int idx = m_grammar.decodeNonTerminalId(symbol) + m_grammar.getTerminalSize();
+                    if(m_table[ind][idx].action != 'S' || 
+                        m_table[ind][idx].priority > production.priority) {
 
-                        m_table[ind][m_grammar.decodeNonTerminalId(symbol) + m_grammar.getTerminalSize()] = TableElement('S', m_stateMap[dst], production.priority); // shift j
+                        m_table[ind][idx] = TableElement('S', m_stateMap[dst], production.priority); // shift j
                     }
                         
                 }
@@ -251,9 +245,10 @@ void TableBuilder::generate() {
         }
     }
     
-    for(int i = 0; i < (int)m_table.size(); ++i)
+    for(int i = 0; i < (int)m_table.size(); ++i){
         for(int j = 0; j < (int)m_table[i].size(); ++j){
             if(!m_table[i][j].action)
                 m_table[i][j] = TableElement('E');
         }
+	}
 }
