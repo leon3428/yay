@@ -21,8 +21,9 @@ void Grammar::loadGrammar(std::istream& stream) {
     std::string line;
     bool charsSorted = false;
     int productionCnt = 0;
+    int leftSide = -1;
+
     while(getline(stream, line)) {
-        int leftSide;
 
         // angry windows noises
         line.erase(std::remove(line.begin(), line.end(), '\n'), line.cend());
@@ -52,6 +53,7 @@ void Grammar::loadGrammar(std::istream& stream) {
                 }  
             }
         } else if(line[0] != ' ') {
+            
             if(!charsSorted) {
                 charsSorted = true;
 
@@ -69,6 +71,7 @@ void Grammar::loadGrammar(std::istream& stream) {
                 m_grammarProductions[ decodeNonTerminalId(getNonTerminalCharId("<'S>")) ].push_back({-1, {encodeNonTerminalId(m_svFindInd(m_nonTerminalChars, start))}});
             }
 
+            
             leftSide = m_svFindInd(m_nonTerminalChars, line);
         } else {
             std::stringstream ss(line);

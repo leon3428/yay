@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <fstream>
 #include <unordered_map>
+#include <map>
 
 /**
  * @brief Shift Reduce table element;
@@ -64,11 +65,11 @@ struct DfaStateHasher {
         std::size_t seed = s.size();
         for(auto lr1State : s) {
             uint32_t x = lr1State.grammarProductionLeft;
-            x *= 31;
+            x *= 37;
             x += lr1State.grammarProductionId;
-            x *= 31;
+            x *= 37;
             x += lr1State.dotPosition;
-            x *= 31;
+            x *= 37;
             x += lr1State.followChar;
             seed ^= x + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         }
@@ -85,6 +86,7 @@ private:
     const Grammar &m_grammar;                                                           ///< reference to grammar 
     std::vector<std::set<int> > m_nonTerminalFirst;                                     ///< memory for already computed first set of an ntc
     std::unordered_map<std::set<LR1State>, int, DfaStateHasher> m_stateMap;  
+    std::unordered_map<std::set<LR1State>, std::map<int, int> , DfaStateHasher> m_gotoMap;
     std::vector<std::vector<TableElement> > m_table; // terminal ... nonterminal
     const std::set<int>& m_getFirstForNonTerminalChar(int id);                          ///< computes first set if not in memory
     int startState;

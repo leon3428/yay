@@ -147,13 +147,14 @@ void TableBuilder::generate_items() {
             std::set<LR1State> dst;
             gotoState(it -> first, symbol, dst);
             
-            if(dst.empty()) continue;
-            
-            
-            if(m_stateMap.find(dst) == m_stateMap.end()) {
-                auto res = m_stateMap.insert({dst, m_stateMap.size()});
-                stack.push(res.first);
-            }
+            if(!dst.empty()) {
+                if(m_stateMap.find(dst) == m_stateMap.end()) {
+                    auto res = m_stateMap.insert({dst, m_stateMap.size()});
+                    stack.push(res.first);
+                }
+
+                m_gotoMap[it -> first][symbol] = m_stateMap[dst];
+            } 
         }    
     }
 }
@@ -182,6 +183,7 @@ void TableBuilder::outputTable(std::string outPath) {
 
 
 void TableBuilder::generate() {
+
     generate_items();
     //print();
 
@@ -191,6 +193,7 @@ void TableBuilder::generate() {
         m_table[ind].resize(m_grammar.getTerminalSize() + m_grammar.getNonTerminalSize());
         
         for(LR1State curr : state) {
+
             if(curr.grammarProductionLeft == m_grammar.getNonTerminalCharId("<'S>") && curr.dotPosition == 1 && curr.followChar == m_grammar.getTerminalCharId("$")){ // S'
                 m_table[ind][m_grammar.getTerminalCharId("$")] = TableElement('A');
                 continue;
@@ -205,14 +208,12 @@ void TableBuilder::generate() {
 
             if(curr.dotPosition < m_grammar.getGrammarProductionSize(curr.grammarProductionLeft, curr.grammarProductionId)
                 && production.rightSide[0] != emptySymbol && m_grammar.isTerminal(symbol)) {
-                
-                std::set<LR1State> dst;
-                gotoState(state, symbol, dst);
-                
-                if(m_stateMap.find(dst) != m_stateMap.end()) {
-                    m_table[ind][symbol] = TableElement('S', m_stateMap[dst], production.priority); // shift j
-                }
-						
+    
+                if(m_gotoMap.find(state) != m_gotoMap.end()) {
+                    if(m_gotoMap[state].find(symbol) != m_gotoMap[state].end()) {
+                        m_table[ind][symbol] = TableElement('S', m_gotoMap[state][symbol], production.priority);
+                    }
+                }		
 
             } else if(curr.dotPosition == m_grammar.getGrammarProductionSize(curr.grammarProductionLeft, curr.grammarProductionId) ||
                     production.rightSide[0] == emptySymbol) {
@@ -229,17 +230,17 @@ void TableBuilder::generate() {
             }
 
             if(!m_grammar.isTerminal(symbol) && curr.dotPosition < production.rightSide.size() && production.rightSide[0] != '$') {
-                std::set<LR1State> dst;
-                gotoState(state, symbol, dst);
 
-                if(m_stateMap.find(dst) != m_stateMap.end()) {
-					int idx = m_grammar.decodeNonTerminalId(symbol) + m_grammar.getTerminalSize();
-                    if(m_table[ind][idx].action != 'S' || 
-                        m_table[ind][idx].priority > production.priority) {
+                if(m_gotoMap.find(state) != m_gotoMap.end()) {
+                    if(m_gotoMap[state].find(symbol) != m_gotoMap[state].end()) {
 
-                        m_table[ind][idx] = TableElement('S', m_stateMap[dst], production.priority); // shift j
+                        int idx = m_grammar.decodeNonTerminalId(symbol) + m_grammar.getTerminalSize();
+                        if(m_table[ind][idx].action != 'S' || 
+                            m_table[ind][idx].priority > production.priority) {
+
+                            m_table[ind][idx] = TableElement('S', m_gotoMap[state][symbol], production.priority); // shift j
+                        }
                     }
-                        
                 }
             }
         }

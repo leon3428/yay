@@ -1,5 +1,6 @@
 import subprocess
 import os
+import time
 
 EXAMPLES_DIR = 'test/test1/examples'
 PROJECT_ROOT = ''
@@ -14,13 +15,18 @@ def main():
 
             continue
 
+        print('Started test: ', exampleDirName, '----------------------------', sep ='')
+
         # run Yay
         with open(os.path.join(EXAMPLES_DIR, exampleDirName, 'test.san')) as configFile:
             configFileContent = configFile.read()
             
+            begin_t = time.time()
+
             generateP = subprocess.run([os.path.join(PROJECT_ROOT, 'build/src/Yay')], input=configFileContent, capture_output=True, text=True)
 
-            print(generateP.stdout)
+            end_t = time.time()
+            print('Table generation took: ', end_t-begin_t)
 
         # run yay and compare output
 
@@ -33,12 +39,13 @@ def main():
 
 
             if YayProcess.stdout == outputFileContent:
-                print('Test passed for', exampleDirName)
+                print('Test passed')
             else:
-                print('Test failed for', exampleDirName)
+                print('Test failed')
                 print(YayProcess.stderr)
                 print(YayProcess.stdout, '\n\n', outputFileContent)
                 break
+        print()
         
 
 if __name__ == '__main__':
