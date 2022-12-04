@@ -86,7 +86,7 @@ private:
     const Grammar &m_grammar;                                                           ///< reference to grammar 
     std::vector<std::set<int> > m_nonTerminalFirst;                                     ///< memory for already computed first set of an ntc
     std::unordered_map<std::set<LR1State>, int, DfaStateHasher> m_stateMap;  
-    std::unordered_map<std::set<LR1State>, std::map<int, int> , DfaStateHasher> m_gotoMap;
+    std::vector<std::map<int, int> > m_gotoTable;
     std::vector<std::vector<TableElement> > m_table; // terminal ... nonterminal
     const std::set<int>& m_getFirstForNonTerminalChar(int id);                          ///< computes first set if not in memory
     int startState;

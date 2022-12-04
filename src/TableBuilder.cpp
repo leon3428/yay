@@ -153,7 +153,11 @@ void TableBuilder::generate_items() {
                     stack.push(res.first);
                 }
 
-                m_gotoMap[it -> first][symbol] = m_stateMap[dst];
+                size_t state_ind = m_stateMap[it -> first];
+
+                if(m_gotoTable.size() <= state_ind)
+                    m_gotoTable.resize(state_ind + 1);
+                m_gotoTable[state_ind][symbol] = m_stateMap[dst];
             } 
         }    
     }
@@ -209,11 +213,11 @@ void TableBuilder::generate() {
             if(curr.dotPosition < m_grammar.getGrammarProductionSize(curr.grammarProductionLeft, curr.grammarProductionId)
                 && production.rightSide[0] != emptySymbol && m_grammar.isTerminal(symbol)) {
     
-                if(m_gotoMap.find(state) != m_gotoMap.end()) {
-                    if(m_gotoMap[state].find(symbol) != m_gotoMap[state].end()) {
-                        m_table[ind][symbol] = TableElement('S', m_gotoMap[state][symbol], production.priority);
-                    }
-                }		
+
+                if(m_gotoTable[ind].find(symbol) != m_gotoTable[ind].end()) {
+                    m_table[ind][symbol] = TableElement('S', m_gotoTable[ind][symbol], production.priority);
+                }
+		
 
             } else if(curr.dotPosition == m_grammar.getGrammarProductionSize(curr.grammarProductionLeft, curr.grammarProductionId) ||
                     production.rightSide[0] == emptySymbol) {
@@ -231,17 +235,17 @@ void TableBuilder::generate() {
 
             if(!m_grammar.isTerminal(symbol) && curr.dotPosition < production.rightSide.size() && production.rightSide[0] != '$') {
 
-                if(m_gotoMap.find(state) != m_gotoMap.end()) {
-                    if(m_gotoMap[state].find(symbol) != m_gotoMap[state].end()) {
 
-                        int idx = m_grammar.decodeNonTerminalId(symbol) + m_grammar.getTerminalSize();
-                        if(m_table[ind][idx].action != 'S' || 
-                            m_table[ind][idx].priority > production.priority) {
+                if(m_gotoTable[ind].find(symbol) != m_gotoTable[ind].end()) {
 
-                            m_table[ind][idx] = TableElement('S', m_gotoMap[state][symbol], production.priority); // shift j
-                        }
+                    int idx = m_grammar.decodeNonTerminalId(symbol) + m_grammar.getTerminalSize();
+                    if(m_table[ind][idx].action != 'S' || 
+                        m_table[ind][idx].priority > production.priority) {
+
+                        m_table[ind][idx] = TableElement('S', m_gotoTable[ind][symbol], production.priority); // shift j
                     }
                 }
+
             }
         }
     }
